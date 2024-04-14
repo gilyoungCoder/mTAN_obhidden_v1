@@ -211,7 +211,7 @@ class dec_mtan_rnn(nn.Module):
             nn.Linear(2*nhidden, 50),
             nn.ReLU(),
             nn.Linear(50, input_dim))
-        self.set_trans = TimeSeriesAugmentation(input_dim+1, 256, input_dim+1, num_outputs=1)
+        # self.set_trans = TimeSeriesAugmentation(input_dim+1, 256, input_dim+1, num_outputs=1)
         if learn_emb:
             self.periodic = nn.Linear(1, embed_time-1)
             self.linear = nn.Linear(1, 1)
@@ -246,5 +246,5 @@ class dec_mtan_rnn(nn.Module):
             key = self.fixed_time_embedding(self.query.unsqueeze(0)).to(self.device)
         out = self.att(query, key, out)
         out = self.z0_to_obs(out)
-        _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
+        # _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
         return out        

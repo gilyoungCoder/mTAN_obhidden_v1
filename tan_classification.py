@@ -44,6 +44,7 @@ parser.add_argument('--learn-emb', action='store_true')
 parser.add_argument('--dataset', type=str, default='physionet')
 parser.add_argument('--alpha', type=int, default=100)
 parser.add_argument('--beta', type=int, default=200000)
+parser.add_argument('--gamma', type=int, default=1000000)
 parser.add_argument('--old-split', type=int, default=1)
 parser.add_argument('--nonormalize', action='store_true')
 parser.add_argument('--enc-num-heads', type=int, default=1)
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     total_time = 0.
 
     for itr in range(1, args.niters + 1):
-        train_recon_loss, train_ce_loss, train_reg_loss = 0, 0, 0
+        train_recon_loss, train_ce_loss, train_reg_loss, train_time_loss = 0, 0, 0, 0
         mse = 0
         train_n = 0
         train_acc = 0
@@ -138,10 +139,13 @@ if __name__ == '__main__':
             
             x_aug, tp_aug, ob_x, ob_t = aug(observed_tp, torch.cat((observed_data, observed_mask), 2))
             
-            x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((ob_t, tp_aug), -1)
+            x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((observed_tp, tp_aug), -1)
   
             
-            reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
+            reg_loss = utils.diversity_regularization(tp_total, drate = args.drate)
+            # MSE 손실 함수 객체 생성
+            tloss = nn.MSELoss()
+            time_loss = tloss(ob_t, observed_tp)
 
             out = rec(x_total, tp_total)
             # out = rec(x_aug, tp_aug)
@@ -173,7 +177,7 @@ if __name__ == '__main__':
             recon_loss = -(torch.logsumexp(logpx - kl_coef * analytic_kl, dim=0).mean(0) - np.log(args.k_iwae))
             label = label.unsqueeze(0).repeat_interleave(args.k_iwae, 0).view(-1)
             ce_loss = criterion(pred_y, label)
-            loss = recon_loss + args.alpha*ce_loss + args.beta*reg_loss
+            loss = recon_loss + args.alpha*ce_loss + args.beta*reg_loss + args.gamma*time_loss
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -181,6 +185,7 @@ if __name__ == '__main__':
             train_ce_loss += ce_loss.item() * batch_len
             train_recon_loss += recon_loss.item() * batch_len
             train_reg_loss += reg_loss.item() * batch_len
+            train_time_loss += time_loss.item() * batch_len
             train_acc += (pred_y.argmax(1) == label).sum().item()/args.k_iwae
             train_n += batch_len
             mse += utils.mean_squared_error(observed_data, pred_x.mean(0), 
@@ -201,8 +206,9 @@ if __name__ == '__main__':
         test_loss, test_acc, test_auc = utils.evaluate_classifier(
             rec, aug, dec, kl_coef, test_loader, args=args, classifier=classifier, reconst=True, num_sample=1, dim=dim)
         cur_reg_loss = args.beta*train_reg_loss/train_n
-        print('Iter: {}, recon_loss: {:.4f}, ce_loss: {:.4f}, reg_loss: {:.4f}, acc: {:.4f}, mse: {:.4f}, val_loss: {:.4f}, val_acc: {:.4f}, test_acc: {:.4f}, test_auc: {:.4f}'
-              .format(itr, train_recon_loss/train_n, args.alpha*train_ce_loss/train_n, cur_reg_loss,
+        cur_time_loss = args.gamma*train_time_loss/train_n
+        print('Iter: {}, recon_loss: {:.4f}, ce_loss: {:.4f}, reg_loss: {:.4f}, time_loss: {:.4f}, acc: {:.4f}, mse: {:.4f}, val_loss: {:.4f}, val_acc: {:.4f}, test_acc: {:.4f}, test_auc: {:.4f}'
+              .format(itr, train_recon_loss/train_n, args.alpha*train_ce_loss/train_n, cur_reg_loss, cur_time_loss,
                       train_acc/train_n, mse/train_n, val_loss, val_acc, test_acc, test_auc))
         
         

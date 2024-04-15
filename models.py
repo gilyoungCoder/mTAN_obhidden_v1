@@ -109,21 +109,26 @@ class TimeSeriesAugmentation(nn.Module):
         # t와 x를 concatenate하여 초기 변환 레이어에 입력
         tx = torch.cat([x, t.unsqueeze(-1)], dim=-1)
         hidden_representation = self.initial_transform(tx)
-        
+        # hidden_representation = tx
         # Set Transformer를 사용하여 숨겨진 표현 증폭
         augmented_representation, observed_representation = self.set_transformer(hidden_representation)
         # augmented_representation = self.set_transformer(tx)
         
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환
         augmented_out = self.final_transform(augmented_representation)
-        # output = self.sigmoid(augmented_out)
-        # output = torch.clamp(augmented_out, min=0, max=1)
-        
+        # augmented_out = augmented_representation
+        output = self.sigmoid(augmented_out)
+        # output = augmented_out
+
         observed_out = self.final_transform_observed(observed_representation)
-        ob_x = observed_out
+        ob_output = self.sigmoid(observed_out)
+        # ob_output = observed_out
+        ob_x = ob_output
+        # ob_x, ob_t = ob_output[ :, :, :self.dim-1], ob_output[ :, :, -1]
+
         # 새로운 t와 x 분리
-        new_x, new_t = augmented_out[ :, :, :self.dim-1], augmented_out[ :, :, -1]
-        new_t = self.sigmoid(new_t)
+        new_x, new_t = output[ :, :, :self.dim-1], output[ :, :, -1]
+        # new_t = self.sigmoid(new_t)
         return new_x, new_t, ob_x, t
         # return torch.cat((new_x, ob_x), -2), torch.cat((new_t, t), -1)
 
@@ -207,11 +212,15 @@ class dec_mtan_rnn(nn.Module):
         self.learn_emb = learn_emb
         self.att = multiTimeAttention(2*nhidden, 2*nhidden, embed_time, num_heads)
         self.gru_rnn = nn.GRU(latent_dim, nhidden, bidirectional=True, batch_first=True)    
-        self.z0_to_obs = nn.Sequential(
+        self.z0_to_obsh = nn.Sequential(
             nn.Linear(2*nhidden, 50),
             nn.ReLU(),
             nn.Linear(50, input_dim))
         self.set_trans = TimeSeriesAugmentation(input_dim+1, 256, input_dim+1, num_outputs=1)
+        self.obsh_to_obs = nn.Sequential(
+            nn.Linear(input_dim, 50),
+            nn.ReLU(),
+            nn.Linear(50, input_dim))
         if learn_emb:
             self.periodic = nn.Linear(1, embed_time-1)
             self.linear = nn.Linear(1, 1)
@@ -245,6 +254,7 @@ class dec_mtan_rnn(nn.Module):
             query = self.fixed_time_embedding(time_steps).to(self.device)
             key = self.fixed_time_embedding(self.query.unsqueeze(0)).to(self.device)
         out = self.att(query, key, out)
-        out = self.z0_to_obs(out)
+        out = self.z0_to_obsh(out)
         _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
+        out = self.obsh_to_obs(out)
         return out        

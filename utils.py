@@ -91,7 +91,7 @@ def evaluate_classifier(model, aug, dec, kl_coef, test_loader, args=None, classi
             
             x_aug, tp_aug, ob_x, ob_t = aug(observed_tp, torch.cat((observed_data, observed_mask), 2))
             
-            x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((ob_t, tp_aug), -1)
+            x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((observed_tp, tp_aug), -1)
   
             out = model(x_total, tp_total)
             if reconst:

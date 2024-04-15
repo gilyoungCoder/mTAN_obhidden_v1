@@ -142,7 +142,8 @@ if __name__ == '__main__':
             x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((observed_tp, tp_aug), -1)
   
             
-            reg_loss = utils.diversity_regularization(tp_total, drate = args.drate)
+            # reg_loss = utils.diversity_regularization(tp_total, drate = args.drate)
+            reg_loss = 0
             # MSE 손실 함수 객체 생성
             tloss = nn.MSELoss()
             time_loss = tloss(ob_t, observed_tp)

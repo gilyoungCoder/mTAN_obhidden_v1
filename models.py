@@ -97,12 +97,13 @@ class TimeSeriesAugmentation(nn.Module):
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환하기 위한 레이어
         # self.final_transform = nn.Linear(hidden_dim, output_dim)
         self.final_transform = nn.Sequential(
-            nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim))
-        self.final_transform_observed = nn.Sequential(
             nn.Linear(128, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim-1))
+            nn.Linear(hidden_dim, output_dim))
+        # self.final_transform_observed = nn.Sequential(
+        #     nn.Linear(128, hidden_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hidden_dim, output_dim-1))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, t, x):
@@ -117,19 +118,20 @@ class TimeSeriesAugmentation(nn.Module):
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환
         augmented_out = self.final_transform(augmented_representation)
         # augmented_out = augmented_representation
-        # output = self.sigmoid(augmented_out)
-        output = augmented_out
+        output = self.sigmoid(augmented_out)
+        # output = augmented_out
 
-        observed_out = self.final_transform_observed(observed_representation)
-        # ob_output = self.sigmoid(observed_out)
-        ob_output = observed_out
-        ob_x = ob_output
-        # ob_x, ob_t = ob_output[ :, :, :self.dim-1], ob_output[ :, :, -1]
+        # observed_out = self.final_transform_observed(observed_representation)
+        observed_out = self.final_transform(observed_representation)
+        ob_output = self.sigmoid(observed_out)
+        # ob_output = observed_out
+        # ob_x = ob_output
+        ob_x, ob_t = ob_output[ :, :, :self.dim-1], ob_output[ :, :, -1]
 
         # 새로운 t와 x 분리
         new_x, new_t = output[ :, :, :self.dim-1], output[ :, :, -1]
-        new_t = self.sigmoid(new_t)
-        return new_x, new_t, ob_x, t
+        # new_t = self.sigmoid(new_t)
+        return new_x, new_t, ob_x, ob_t
         # return torch.cat((new_x, ob_x), -2), torch.cat((new_t, t), -1)
 
 

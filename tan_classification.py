@@ -152,8 +152,8 @@ if __name__ == '__main__':
             
             if random.random()<0.001:
                 print("time point")
-                # print("original time: ", observed_tp[0])  
-                # print("settransformer data: ", ob_x[0, :, 0], ob_x[0, :, 0].shape)
+                print("original time: ", observed_tp[0])  
+                print("settransformer ob time: ", ob_t[0])
                 print("settransformer time: ", tp_aug[0])   
    
 

@@ -131,7 +131,7 @@ class TimeSeriesAugmentation(nn.Module):
         # 새로운 t와 x 분리
         new_x, new_t = output[ :, :, :self.dim-1], output[ :, :, -1]
         # new_t = self.sigmoid(new_t)
-        return new_x, new_t, ob_x, t
+        return new_x, new_t, ob_x, ob_t
         # return torch.cat((new_x, ob_x), -2), torch.cat((new_t, t), -1)
 
 
@@ -257,6 +257,6 @@ class dec_mtan_rnn(nn.Module):
             key = self.fixed_time_embedding(self.query.unsqueeze(0)).to(self.device)
         out = self.att(query, key, out)
         out = self.z0_to_obsh(out)
-        # _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
-        # out = self.obsh_to_obs(out)
+        _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
+        out = self.obsh_to_obs(out)
         return out        

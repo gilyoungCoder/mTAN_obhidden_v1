@@ -131,7 +131,7 @@ class TimeSeriesAugmentation(nn.Module):
         # 새로운 t와 x 분리
         new_x, new_t = output[ :, :, :self.dim-1], output[ :, :, -1]
         # new_t = self.sigmoid(new_t)
-        return new_x, new_t, ob_x, ob_t
+        return new_x, new_t, ob_x, t
         # return torch.cat((new_x, ob_x), -2), torch.cat((new_t, t), -1)
 
 

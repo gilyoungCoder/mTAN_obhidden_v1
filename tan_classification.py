@@ -141,16 +141,16 @@ if __name__ == '__main__':
             x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((ob_t, tp_aug), -1)
   
             
-            reg_loss = utils.diversity_regularization(tp_total, drate = args.drate)
+            reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
 
             out = rec(x_total, tp_total)
             # out = rec(x_aug, tp_aug)
             
-            # if random.random()<0.003:
-            #     print("time point")
-            #     print("original time: ", observed_tp[0])  
-            #     print("settransformer data: ", ob_x[0, :, 0], ob_x[0, :, 0].shape)
-            #     print("settransformer time: ", tp_aug[0])   
+            if random.random()<0.001:
+                print("time point")
+                # print("original time: ", observed_tp[0])  
+                # print("settransformer data: ", ob_x[0, :, 0], ob_x[0, :, 0].shape)
+                print("settransformer time: ", tp_aug[0])   
    
 
             

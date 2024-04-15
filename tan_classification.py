@@ -145,8 +145,9 @@ if __name__ == '__main__':
             # reg_loss = utils.diversity_regularization(tp_total, drate = args.drate)
             reg_loss = 0
             # MSE 손실 함수 객체 생성
-            tloss = nn.MSELoss()
-            time_loss = tloss(ob_t, observed_tp)
+            # tloss = nn.MSELoss()
+            # time_loss = tloss(ob_t, observed_tp)
+            time_loss = 0
 
             out = rec(ob_x, observed_tp)
             # out = rec(x_aug, tp_aug)

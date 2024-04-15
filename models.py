@@ -257,6 +257,6 @@ class dec_mtan_rnn(nn.Module):
             key = self.fixed_time_embedding(self.query.unsqueeze(0)).to(self.device)
         out = self.att(query, key, out)
         out = self.z0_to_obsh(out)
-        # _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
+        _, _, out, _ = self.set_trans(time_steps.to(self.device), out)
         # out = self.obsh_to_obs(out)
         return out        

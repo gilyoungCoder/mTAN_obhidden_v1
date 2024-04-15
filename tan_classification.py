@@ -147,7 +147,7 @@ if __name__ == '__main__':
             tloss = nn.MSELoss()
             time_loss = tloss(ob_t, observed_tp)
 
-            out = rec(x_total, tp_total)
+            out = rec(ob_x, observed_tp)
             # out = rec(x_aug, tp_aug)
             
             # if random.random()<0.001:

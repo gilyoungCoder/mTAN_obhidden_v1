@@ -150,11 +150,11 @@ if __name__ == '__main__':
             out = rec(x_total, tp_total)
             # out = rec(x_aug, tp_aug)
             
-            if random.random()<0.001:
-                print("time point")
-                print("original time: ", observed_tp[0])  
-                print("settransformer ob time: ", ob_t[0])
-                print("settransformer time: ", tp_aug[0])   
+            # if random.random()<0.001:
+            #     print("time point")
+            #     print("original time: ", observed_tp[0])  
+            #     print("settransformer ob time: ", ob_t[0])
+            #     print("settransformer time: ", tp_aug[0])   
    
 
             

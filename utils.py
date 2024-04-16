@@ -93,7 +93,7 @@ def evaluate_classifier(model, aug, dec, kl_coef, test_loader, args=None, classi
             
             x_total, tp_total = torch.cat((ob_x, x_aug), -2), torch.cat((observed_tp, tp_aug), -1)
   
-            out = model(ob_x, observed_tp)
+            out = model(x_aug, tp_aug)
             if reconst:
                 qz0_mean, qz0_logvar = out[:, :,
                                            :args.latent_dim], out[:, :, args.latent_dim:]

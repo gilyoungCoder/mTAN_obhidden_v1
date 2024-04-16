@@ -146,7 +146,7 @@ if __name__ == '__main__':
             # reg_loss = 0
             # MSE 손실 함수 객체 생성
             tloss = nn.MSELoss()
-            time_loss = tloss(ob_t, observed_tp)
+            time_loss = tloss(observed_tp, observed_tp)
             # time_loss = 0
 
             out = rec(ob_x, observed_tp)
